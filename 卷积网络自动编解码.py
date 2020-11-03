@@ -5,6 +5,7 @@ from torchvision import datasets,transforms
 import numpy as np
 import matplotlib.pyplot as plt
 from torch.autograd import Variable
+import random
 
 def dis(image):
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
@@ -38,9 +39,9 @@ dataset_train = datasets.MNIST(root="./data",transform=transform,train=True,down
 
 dataset_test = datasets.MNIST(root="./data",transform=transform,train=False)
 
-train_load = torch.utils.data.DataLoader(dataset = dataset_train,batch_size = 1,shuffle = True)
+train_load = torch.utils.data.DataLoader(dataset = dataset_train,batch_size = 64,shuffle = True)
 
-test_load = torch.utils.data.DataLoader(dataset = dataset_test,batch_size = 1,shuffle = True)
+test_load = torch.utils.data.DataLoader(dataset = dataset_test,batch_size = 64,shuffle = True)
 if __name__ == '__main__':
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     print(device)
@@ -50,14 +51,14 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters())
     loss_f = torch.nn.MSELoss()
     
-    epoch_n = 5
+    epoch_n = 5000
     for epoch in range(epoch_n):
         running_loss = 0.0
         print("Epoch {}/{}".format(epoch, epoch_n))
         print("-"*10)
         for data in train_load:
             x_train,_ = data
-            noisy_x_train = x_train + 0.5*torch.randn(x_train.shape)
+            noisy_x_train = x_train + random.random()*torch.randn(x_train.shape)
             noisy_x_train = torch.clamp(noisy_x_train,0.,1.)
             #x_train , noisy_x_train = Variable(x_train),Variable(noisy_x_train)
             x_train = x_train.to(device)
@@ -65,8 +66,8 @@ if __name__ == '__main__':
             train_pre = model(noisy_x_train)
             #print("train_pre=",train_pre.shape)
             #print("x_train=",x_train.shape)
-            print(train_pre)
-            print(x_train)
+            #print(train_pre)
+            #print(x_train)
             loss = loss_f(train_pre,x_train)
             
             optimizer.zero_grad()
